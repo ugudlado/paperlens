@@ -68,22 +68,22 @@
     }
 
     .navbar-search {
-      flex: 1;
-      max-width: 480px;
+      margin-left: auto;
+      width: 280px;
       position: relative;
     }
 
     .navbar-search input {
       width: 100%;
-      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      padding: 0.3125rem 0.875rem 0.3125rem 2.125rem;
       font-family: 'Nunito Sans', sans-serif;
-      font-size: 0.9rem;
+      font-size: 0.8125rem;
       color: var(--text);
-      background: var(--bg-2);
+      background: var(--bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 6px;
       outline: none;
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: border-color 0.15s;
     }
 
     .navbar-search input::placeholder {
@@ -92,13 +92,12 @@
 
     .navbar-search input:focus {
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.1);
       background: var(--card);
     }
 
     .navbar-search-icon {
       position: absolute;
-      left: 0.75rem;
+      left: 0.625rem;
       top: 50%;
       transform: translateY(-50%);
       color: var(--text-3);
@@ -161,9 +160,6 @@
       text-align: center;
     }
 
-    .navbar-spacer {
-      flex: 1;
-    }
 
 
     /* ── Hero ── */
@@ -502,14 +498,7 @@
       }
 
       .navbar-search {
-        order: 3;
-        max-width: 100%;
-        width: 100%;
-        flex-basis: 100%;
-      }
-
-      .navbar-spacer {
-        display: none;
+        width: 200px;
       }
 
       .hero {
@@ -561,7 +550,7 @@
   <nav class="navbar">
     <a href="index.html" class="navbar-logo">Paper<span>Lens</span></a>
     <div class="navbar-search">
-      <svg class="navbar-search-icon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <svg class="navbar-search-icon" width="13" height="13" viewBox="0 0 15 15" fill="none" aria-hidden="true">
         <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
         <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
       </svg>
@@ -577,7 +566,6 @@
       >
       <div class="search-dropdown" id="search-dropdown" role="listbox"></div>
     </div>
-    <div class="navbar-spacer"></div>
   </nav>
 
   <!-- Hero -->
