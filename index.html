@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaperLens — Research papers, made understandable</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Nunito+Sans:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FBF8F3;
+      --bg-2: #F4EFE7;
+      --card: #FFFFFF;
+      --text: #2D2A26;
+      --text-2: #6E685E;
+      --text-3: #A9A299;
+      --accent: #8B5E3C;
+      --accent-light: #F5EDE5;
+      --blue: #3B6FA0;
+      --green: #4A7C59;
+      --red: #A0523B;
+      --purple: #6B5B95;
+      --border: #E4DED4;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Nunito Sans', sans-serif;
+      font-weight: 400;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .navbar-logo {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .navbar-logo span {
+      color: var(--accent);
+    }
+
+    .navbar-search {
+      flex: 1;
+      max-width: 480px;
+      position: relative;
+    }
+
+    .navbar-search input {
+      width: 100%;
+      padding: 0.5rem 1rem 0.5rem 2.5rem;
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.9rem;
+      color: var(--text);
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .navbar-search input::placeholder {
+      color: var(--text-3);
+    }
+
+    .navbar-search input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(139, 94, 60, 0.1);
+      background: var(--card);
+    }
+
+    .navbar-search-icon {
+      position: absolute;
+      left: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-3);
+      pointer-events: none;
+    }
+
+    .navbar-spacer {
+      flex: 1;
+    }
+
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem 2.5rem;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.0625rem;
+      color: var(--text-2);
+      font-weight: 400;
+      line-height: 1.7;
+    }
+
+    /* ── Discover Widget ── */
+    .discover-section {
+      max-width: 760px;
+      margin: 0 auto 2.5rem;
+      padding: 0 2rem;
+    }
+
+    .section-label {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 0.875rem;
+    }
+
+    .discover-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.75rem 2rem;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+
+    .discover-card:hover {
+      box-shadow: 0 4px 16px rgba(45, 42, 38, 0.08);
+    }
+
+    .discover-card-title {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+      margin-bottom: 0.5rem;
+    }
+
+    .discover-card-meta {
+      font-size: 0.8125rem;
+      color: var(--text-3);
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .discover-card-meta .meta-source {
+      color: var(--blue);
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+    }
+
+    .discover-card-summary {
+      font-size: 0.9375rem;
+      color: var(--text-2);
+      line-height: 1.7;
+      margin-bottom: 1.25rem;
+    }
+
+    .discover-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .tag {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.625rem;
+      border-radius: 100px;
+      background: var(--accent-light);
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .discover-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.875rem;
+    }
+
+    .btn-primary {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: #fff;
+      background: var(--accent);
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1.125rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.375rem;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.88;
+      transform: translateY(-1px);
+    }
+
+    .btn-ghost {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-2);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--text-3);
+      color: var(--text);
+      background: var(--bg-2);
+    }
+
+    .discover-card-placeholder {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--text-3);
+      font-style: italic;
+    }
+
+    /* ── Tag Filter ── */
+    .tags-section {
+      max-width: 760px;
+      margin: 0 auto 1.5rem;
+      padding: 0 2rem;
+    }
+
+    .tags-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .tag-filter {
+      font-family: 'Nunito Sans', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      padding: 0.3125rem 0.875rem;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: var(--card);
+      color: var(--text-2);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+
+    .tag-filter:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .tag-filter.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    /* ── Paper Listing ── */
+    .papers-section {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+    }
+
+    .papers-count {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text-3);
+      margin-bottom: 1rem;
+      font-family: 'Nunito Sans', sans-serif;
+    }
+
+    .papers-list {
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .paper-card {
+      display: block;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.375rem 1.5rem;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color 0.18s, box-shadow 0.18s, transform 0.12s;
+      cursor: pointer;
+    }
+
+    .paper-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 3px 14px rgba(139, 94, 60, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .paper-card-title {
+      font-family: 'Libre Baskerville', serif;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.35;
+      margin-bottom: 0.375rem;
+    }
+
+    .paper-card-authors {
+      font-size: 0.8125rem;
+      color: var(--text-3);
+      margin-bottom: 0.25rem;
+      font-weight: 500;
+    }
+
+    .paper-card-byline {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-3);
+      margin-bottom: 0.75rem;
+    }
+
+    .paper-card-byline .year {
+      font-weight: 600;
+    }
+
+    .paper-card-byline .source {
+      font-family: 'Fira Code', monospace;
+      font-size: 0.75rem;
+      color: var(--blue);
+    }
+
+    .paper-card-byline .sep {
+      color: var(--border);
+    }
+
+    .paper-card-summary {
+      font-size: 0.9rem;
+      color: var(--text-2);
+      line-height: 1.65;
+      margin-bottom: 0.875rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .paper-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--text-3);
+    }
+
+    .empty-state p {
+      font-size: 1rem;
+      margin-bottom: 0.375rem;
+    }
+
+    .empty-state small {
+      font-size: 0.875rem;
+    }
+
+    /* ── Loading state ── */
+    .loading-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-3);
+      font-style: italic;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      font-size: 0.8125rem;
+      color: var(--text-3);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 820px) {
+      .navbar {
+        padding: 0 1rem;
+        gap: 0.875rem;
+        flex-wrap: wrap;
+        height: auto;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+      }
+
+      .navbar-logo {
+        font-size: 1.1rem;
+      }
+
+      .navbar-search {
+        order: 3;
+        max-width: 100%;
+        width: 100%;
+        flex-basis: 100%;
+      }
+
+      .navbar-spacer {
+        display: none;
+      }
+
+      .hero {
+        padding: 2.5rem 1.25rem 2rem;
+      }
+
+      .hero h1 {
+        font-size: 1.75rem;
+      }
+
+      .hero p {
+        font-size: 0.9375rem;
+      }
+
+      .discover-section,
+      .tags-section,
+      .papers-section {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+      }
+
+      .discover-card {
+        padding: 1.25rem 1.25rem;
+      }
+
+      .discover-card-title {
+        font-size: 1.125rem;
+      }
+
+      .paper-card {
+        padding: 1.125rem 1.125rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 1.5rem;
+      }
+
+      .discover-card-title {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="index.html" class="navbar-logo">Paper<span>Lens</span></a>
+    <div class="navbar-search">
+      <svg class="navbar-search-icon" width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+        <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+        <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <input
+        type="search"
+        id="search-input"
+        placeholder="Search papers by title, authors, tags…"
+        autocomplete="off"
+        spellcheck="false"
+      >
+    </div>
+    <div class="navbar-spacer"></div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <h1>Research papers, made understandable</h1>
+    <p>Community-driven plain-language breakdowns of important research papers.</p>
+  </header>
+
+  <!-- Discover Widget -->
+  <section class="discover-section" aria-label="Discover a paper">
+    <div class="section-label">Discover a Paper</div>
+    <div class="discover-card" id="discover-card">
+      <div class="discover-card-placeholder">Loading papers…</div>
+    </div>
+  </section>
+
+  <!-- Tag Filter -->
+  <section class="tags-section" aria-label="Filter by tag">
+    <div class="tags-bar" id="tags-bar" role="group" aria-label="Filter tags">
+      <button class="tag-filter active" data-tag="all">All</button>
+    </div>
+  </section>
+
+  <!-- Paper Listing -->
+  <main class="papers-section" aria-label="Paper list">
+    <div class="papers-count" id="papers-count" aria-live="polite"></div>
+    <div class="papers-list" id="papers-list">
+      <div class="loading-state">Loading papers…</div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    PaperLens is open source
+  </footer>
+
+  <script>
+    // ── State ──────────────────────────────────────────────────────────────────
+    let allPapers = [];
+    let activeTag = 'all';
+    let searchQuery = '';
+    let discoverPaper = null;
+    let searchDebounce = null;
+
+    // ── Data Loading ──────────────────────────────────────────────────────────
+
+    async function loadPapers() {
+      try {
+        const indexRes = await fetch('papers/index.json');
+        if (!indexRes.ok) throw new Error('Could not load papers/index.json');
+        const index = await indexRes.json();
+
+        const ids = Array.isArray(index) ? index : (index.ids || index.papers || []);
+        if (!ids.length) {
+          allPapers = [];
+          return;
+        }
+
+        const results = await Promise.allSettled(
+          ids.map(id => fetch(`papers/${id}.json`).then(r => r.ok ? r.json() : null))
+        );
+
+        allPapers = results
+          .map(r => r.status === 'fulfilled' ? r.value : null)
+          .filter(Boolean);
+
+      } catch (err) {
+        console.warn('PaperLens: failed to load papers:', err.message);
+        allPapers = [];
+      }
+    }
+
+    // ── Discover Widget ────────────────────────────────────────────────────────
+
+    function pickRandomPaper(exclude) {
+      const pool = allPapers.filter(p => !exclude || p.id !== exclude);
+      if (!pool.length) return allPapers[0] || null;
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function truncateSummary(text, sentences = 2) {
+      if (!text) return '';
+      const sentenceEnds = /[.!?]+\s+/g;
+      let match;
+      let count = 0;
+      let lastIndex = text.length;
+
+      while ((match = sentenceEnds.exec(text)) !== null) {
+        count++;
+        if (count >= sentences) {
+          lastIndex = match.index + match[0].trimEnd().length;
+          break;
+        }
+      }
+
+      return text.slice(0, lastIndex);
+    }
+
+    function formatAuthors(authors, max) {
+      if (!Array.isArray(authors) || !authors.length) return '';
+      if (!max || authors.length <= max) return authors.join(', ');
+      return authors.slice(0, max).join(', ') + ' et al.';
+    }
+
+    function renderDiscoverCard(paper) {
+      if (!paper) {
+        document.getElementById('discover-card').innerHTML =
+          '<div class="discover-card-placeholder">No papers available yet.</div>';
+        return;
+      }
+
+      const preview = truncateSummary(paper.summary, 2);
+      const authors = formatAuthors(paper.authors, 3);
+      const tags = (paper.tags || []).map(t =>
+        `<span class="tag">${escHtml(t)}</span>`
+      ).join('');
+
+      document.getElementById('discover-card').innerHTML = `
+        <div class="discover-card-title">${escHtml(paper.title || 'Untitled')}</div>
+        <div class="discover-card-meta">
+          ${authors ? `<span>${escHtml(authors)}</span>` : ''}
+          ${paper.year ? `<span> · ${escHtml(String(paper.year))}</span>` : ''}
+          ${paper.source ? `<span> · <span class="meta-source">${escHtml(paper.source)}</span></span>` : ''}
+        </div>
+        ${preview ? `<div class="discover-card-summary">${escHtml(preview)}</div>` : ''}
+        ${tags ? `<div class="discover-card-tags">${tags}</div>` : ''}
+        <div class="discover-card-actions">
+          <a href="paper.html#${encodeURIComponent(paper.id)}" class="btn-primary">Read breakdown →</a>
+          <button class="btn-ghost" id="reroll-btn" type="button">Show another</button>
+        </div>
+      `;
+
+      document.getElementById('reroll-btn').addEventListener('click', () => {
+        const next = pickRandomPaper(discoverPaper ? discoverPaper.id : null);
+        discoverPaper = next;
+        renderDiscoverCard(next);
+      });
+    }
+
+    // ── Tags ──────────────────────────────────────────────────────────────────
+
+    function buildTagBar(papers) {
+      const tagSet = new Set();
+      papers.forEach(p => (p.tags || []).forEach(t => tagSet.add(t)));
+      const tags = Array.from(tagSet).sort();
+
+      const bar = document.getElementById('tags-bar');
+      bar.innerHTML = `<button class="tag-filter active" data-tag="all">All</button>`;
+
+      tags.forEach(tag => {
+        const btn = document.createElement('button');
+        btn.className = 'tag-filter';
+        btn.dataset.tag = tag;
+        btn.textContent = tag;
+        bar.appendChild(btn);
+      });
+
+      bar.addEventListener('click', e => {
+        const btn = e.target.closest('.tag-filter');
+        if (!btn) return;
+        activeTag = btn.dataset.tag;
+        bar.querySelectorAll('.tag-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderPaperList();
+      });
+    }
+
+    // ── Filtering ─────────────────────────────────────────────────────────────
+
+    function filterPapers(papers) {
+      let result = papers;
+
+      if (activeTag && activeTag !== 'all') {
+        result = result.filter(p => (p.tags || []).includes(activeTag));
+      }
+
+      if (searchQuery) {
+        const terms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean);
+        result = result.filter(p => {
+          const haystack = [
+            p.title || '',
+            (p.authors || []).join(' '),
+            (p.tags || []).join(' '),
+            p.summary || '',
+          ].join(' ').toLowerCase();
+
+          return terms.every(term => haystack.includes(term));
+        });
+      }
+
+      return result;
+    }
+
+    // ── Paper List Render ─────────────────────────────────────────────────────
+
+    function escHtml(str) {
+      if (typeof str !== 'string') return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function renderPaperList() {
+      const filtered = filterPapers(allPapers);
+      const list = document.getElementById('papers-list');
+      const count = document.getElementById('papers-count');
+
+      count.textContent = `${filtered.length} paper${filtered.length !== 1 ? 's' : ''}`;
+
+      if (!filtered.length) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <p>No papers match your search.</p>
+            <small>Try different keywords or clear your filters.</small>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(paper => {
+        const authors = formatAuthors(paper.authors, 3);
+        const tags = (paper.tags || []).map(t =>
+          `<span class="tag">${escHtml(t)}</span>`
+        ).join('');
+
+        return `
+          <a class="paper-card" href="paper.html#${encodeURIComponent(paper.id)}">
+            <div class="paper-card-title">${escHtml(paper.title || 'Untitled')}</div>
+            ${authors ? `<div class="paper-card-authors">${escHtml(authors)}</div>` : ''}
+            <div class="paper-card-byline">
+              ${paper.year ? `<span class="year">${escHtml(String(paper.year))}</span>` : ''}
+              ${paper.year && paper.source ? `<span class="sep">·</span>` : ''}
+              ${paper.source ? `<span class="source">${escHtml(paper.source)}</span>` : ''}
+            </div>
+            ${paper.summary ? `<div class="paper-card-summary">${escHtml(paper.summary)}</div>` : ''}
+            ${tags ? `<div class="paper-card-tags">${tags}</div>` : ''}
+          </a>`;
+      }).join('');
+    }
+
+    // ── Search ────────────────────────────────────────────────────────────────
+
+    document.getElementById('search-input').addEventListener('input', e => {
+      clearTimeout(searchDebounce);
+      searchDebounce = setTimeout(() => {
+        searchQuery = e.target.value.trim();
+        renderPaperList();
+      }, 220);
+    });
+
+    // ── Init ──────────────────────────────────────────────────────────────────
+
+    async function init() {
+      await loadPapers();
+
+      if (allPapers.length) {
+        discoverPaper = pickRandomPaper(null);
+        renderDiscoverCard(discoverPaper);
+        buildTagBar(allPapers);
+        renderPaperList();
+      } else {
+        document.getElementById('discover-card').innerHTML =
+          '<div class="discover-card-placeholder">No papers found. Add one to get started.</div>';
+        document.getElementById('papers-count').textContent = '0 papers';
+        document.getElementById('papers-list').innerHTML =
+          '<div class="empty-state"><p>No papers yet.</p><small>Add the first one using the link above.</small></div>';
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>

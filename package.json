@@ -1,0 +1,12 @@
+{
+  "name": "paperlens",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Research papers, made understandable",
+  "scripts": {
+    "dev": "portless run serve ."
+  },
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
+}
