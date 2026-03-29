@@ -105,6 +105,62 @@
       pointer-events: none;
     }
 
+    /* ── Search Dropdown ── */
+    .search-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      overflow: hidden;
+      z-index: 200;
+      max-height: 380px;
+      overflow-y: auto;
+    }
+    .search-dropdown.open { display: block; }
+
+    .search-dropdown-item {
+      display: flex;
+      flex-direction: column;
+      padding: 0.75rem 1rem;
+      text-decoration: none;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+      cursor: pointer;
+    }
+    .search-dropdown-item:last-child { border-bottom: none; }
+    .search-dropdown-item:hover,
+    .search-dropdown-item.focused {
+      background: var(--accent-light);
+    }
+    .search-dropdown-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.125rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .search-dropdown-meta {
+      font-size: 0.75rem;
+      color: var(--text-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .search-dropdown-empty {
+      padding: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-3);
+      text-align: center;
+    }
+
     .navbar-spacer {
       flex: 1;
     }
@@ -515,7 +571,11 @@
         placeholder="Search papers by title, authors, tags…"
         autocomplete="off"
         spellcheck="false"
+        aria-label="Search papers"
+        aria-autocomplete="list"
+        aria-controls="search-dropdown"
       >
+      <div class="search-dropdown" id="search-dropdown" role="listbox"></div>
     </div>
     <div class="navbar-spacer"></div>
   </nav>
@@ -759,14 +819,102 @@
       }).join('');
     }
 
-    // ── Search ────────────────────────────────────────────────────────────────
+    // ── Search Dropdown ───────────────────────────────────────────────────────
 
-    document.getElementById('search-input').addEventListener('input', e => {
+    const searchInput = document.getElementById('search-input');
+    const searchDropdown = document.getElementById('search-dropdown');
+    let dropdownFocusIndex = -1;
+
+    function getDropdownItems() {
+      return searchDropdown.querySelectorAll('.search-dropdown-item');
+    }
+
+    function setDropdownFocus(index) {
+      const items = getDropdownItems();
+      items.forEach((el, i) => el.classList.toggle('focused', i === index));
+      dropdownFocusIndex = index;
+    }
+
+    function buildDropdownItem(paper) {
+      const authors = formatAuthors(paper.authors, 2);
+      const metaParts = [authors, paper.year, paper.source].filter(Boolean);
+      const a = document.createElement('a');
+      a.className = 'search-dropdown-item';
+      a.href = 'paper.html#' + encodeURIComponent(paper.id);
+      a.setAttribute('role', 'option');
+      const titleEl = document.createElement('span');
+      titleEl.className = 'search-dropdown-title';
+      titleEl.textContent = paper.title || 'Untitled';
+      a.appendChild(titleEl);
+      if (metaParts.length) {
+        const metaEl = document.createElement('span');
+        metaEl.className = 'search-dropdown-meta';
+        metaEl.textContent = metaParts.join(' · ');
+        a.appendChild(metaEl);
+      }
+      return a;
+    }
+
+    function openDropdown(query) {
+      if (!query) { closeDropdown(); return; }
+      const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+      const matches = allPapers.filter(function(p) {
+        const haystack = [p.title || '', (p.authors || []).join(' '), (p.tags || []).join(' '), p.summary || ''].join(' ').toLowerCase();
+        return terms.every(function(t) { return haystack.includes(t); });
+      }).slice(0, 8);
+
+      searchDropdown.textContent = '';
+      if (!matches.length) {
+        const empty = document.createElement('div');
+        empty.className = 'search-dropdown-empty';
+        empty.textContent = 'No papers found for "' + query + '"';
+        searchDropdown.appendChild(empty);
+      } else {
+        matches.forEach(function(p) { searchDropdown.appendChild(buildDropdownItem(p)); });
+      }
+      dropdownFocusIndex = -1;
+      searchDropdown.classList.add('open');
+    }
+
+    function closeDropdown() {
+      searchDropdown.classList.remove('open');
+      dropdownFocusIndex = -1;
+    }
+
+    searchInput.addEventListener('input', function(e) {
       clearTimeout(searchDebounce);
-      searchDebounce = setTimeout(() => {
-        searchQuery = e.target.value.trim();
+      const q = e.target.value.trim();
+      searchQuery = q;
+      searchDebounce = setTimeout(function() {
+        openDropdown(q);
         renderPaperList();
-      }, 220);
+      }, 180);
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+      if (!searchDropdown.classList.contains('open')) return;
+      const items = getDropdownItems();
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setDropdownFocus(Math.min(dropdownFocusIndex + 1, items.length - 1));
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setDropdownFocus(Math.max(dropdownFocusIndex - 1, 0));
+      } else if (e.key === 'Enter' && dropdownFocusIndex >= 0) {
+        e.preventDefault();
+        if (items[dropdownFocusIndex]) items[dropdownFocusIndex].click();
+      } else if (e.key === 'Escape') {
+        closeDropdown();
+        searchInput.blur();
+      }
+    });
+
+    searchInput.addEventListener('focus', function() {
+      if (searchInput.value.trim()) openDropdown(searchInput.value.trim());
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!searchInput.closest('.navbar-search').contains(e.target)) closeDropdown();
     });
 
     // ── Init ──────────────────────────────────────────────────────────────────
