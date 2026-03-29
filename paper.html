@@ -79,10 +79,10 @@
 
     /* ─── Navbar Search ─────────────────────────────────────────────── */
     .navbar-search {
-      flex: 1;
-      max-width: 360px;
-      margin-left: auto;
-      position: relative;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 340px;
     }
     .navbar-search input {
       width: 100%;
@@ -1742,6 +1742,15 @@
 
     document.addEventListener('click', function(e) {
       if (!inp.closest('.navbar-search').contains(e.target)) close();
+    });
+
+    // Cmd+K / Ctrl+K to focus search
+    document.addEventListener('keydown', function(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        inp.focus();
+        inp.select();
+      }
     });
   })();
 
