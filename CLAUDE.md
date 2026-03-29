@@ -166,6 +166,12 @@ pnpm dev
 
 No build step. Edit files, refresh browser.
 
+## Deployment
+
+**Live**: https://ugudlado.github.io/paperlens/
+
+Push to `main` — GitHub Pages auto-deploys from the repo root.
+
 ## Key UX Principle: Persistent, Not Ephemeral
 
 Like AlgoViz where every algorithm has a persistent visual walkthrough, Research Made Easy should present **persistent annotations** alongside the paper text. Explanations, analogies, and insights should be always-visible companions to the text, not temporary pop-ups that vanish on click-away.
