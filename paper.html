@@ -77,6 +77,85 @@
     }
     .navbar-back:hover { text-decoration: underline; }
 
+    /* ─── Navbar Search ─────────────────────────────────────────────── */
+    .navbar-search {
+      flex: 1;
+      max-width: 360px;
+      margin-left: auto;
+      position: relative;
+    }
+    .navbar-search input {
+      width: 100%;
+      padding: 0.3125rem 0.875rem 0.3125rem 2.125rem;
+      font-family: var(--font-body);
+      font-size: 0.8125rem;
+      color: var(--text);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .navbar-search input:focus { border-color: var(--accent); background: var(--card); }
+    .navbar-search input::placeholder { color: var(--text-3); }
+    .navbar-search-icon {
+      position: absolute;
+      left: 0.625rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-3);
+      pointer-events: none;
+    }
+    .search-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      overflow: hidden;
+      z-index: 200;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .search-dropdown.open { display: block; }
+    .search-dropdown-item {
+      display: flex;
+      flex-direction: column;
+      padding: 0.625rem 0.875rem;
+      text-decoration: none;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .search-dropdown-item:last-child { border-bottom: none; }
+    .search-dropdown-item:hover,
+    .search-dropdown-item.focused { background: var(--accent-light); }
+    .search-dropdown-title {
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .search-dropdown-meta {
+      font-size: 0.6875rem;
+      color: var(--text-3);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .search-dropdown-empty {
+      padding: 0.875rem;
+      font-size: 0.8125rem;
+      color: var(--text-3);
+      text-align: center;
+    }
+
     .navbar-logo {
       font-family: var(--font-body);
       font-size: 1.125rem;
@@ -935,6 +1014,14 @@
 <nav class="navbar" role="navigation" aria-label="Site navigation">
   <a class="navbar-back" href="index.html">← Library</a>
   <a class="navbar-logo" href="index.html">Paper<strong>Lens</strong></a>
+  <div class="navbar-search">
+    <svg class="navbar-search-icon" width="13" height="13" viewBox="0 0 15 15" fill="none" aria-hidden="true">
+      <circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="10.5" y1="10.5" x2="14" y2="14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    <input type="search" id="search-input" placeholder="Search papers…" autocomplete="off" spellcheck="false" aria-label="Search papers" aria-autocomplete="list" aria-controls="search-dropdown">
+    <div class="search-dropdown" id="search-dropdown" role="listbox"></div>
+  </div>
 </nav>
 
 <!-- Mobile pill nav (populated by JS) -->
@@ -1555,6 +1642,108 @@
     err.appendChild(el('a', { href: 'index.html' }, '\u2190 Back to Library'));
     inner.appendChild(err);
   }
+
+  /* ── Navbar Search ───────────────────────────────────────────── */
+
+  (function() {
+    const inp = document.getElementById('search-input');
+    const drop = document.getElementById('search-dropdown');
+    if (!inp || !drop) return;
+
+    let allPapers = [];
+    let debounce = null;
+    let focusIdx = -1;
+
+    // Load paper index lazily on first focus
+    let loaded = false;
+    async function ensureLoaded() {
+      if (loaded) return;
+      loaded = true;
+      try {
+        const res = await fetch('papers/index.json');
+        if (!res.ok) return;
+        const ids = await res.json();
+        const results = await Promise.allSettled(
+          (Array.isArray(ids) ? ids : []).map(id => fetch('papers/' + encodeURIComponent(id) + '.json').then(r => r.ok ? r.json() : null))
+        );
+        allPapers = results.map(r => r.status === 'fulfilled' ? r.value : null).filter(Boolean);
+      } catch(e) { /* silent */ }
+    }
+
+    function items() { return drop.querySelectorAll('.search-dropdown-item'); }
+
+    function setFocus(i) {
+      items().forEach((el, j) => el.classList.toggle('focused', j === i));
+      focusIdx = i;
+    }
+
+    function open(q) {
+      if (!q) { close(); return; }
+      const terms = q.toLowerCase().split(/\s+/).filter(Boolean);
+      const matches = allPapers.filter(function(p) {
+        const hay = [p.title || '', (p.authors || []).join(' '), (p.tags || []).join(' ')].join(' ').toLowerCase();
+        return terms.every(function(t) { return hay.includes(t); });
+      }).slice(0, 6);
+      drop.textContent = '';
+      if (!matches.length) {
+        const empty = document.createElement('div');
+        empty.className = 'search-dropdown-empty';
+        empty.textContent = 'No papers found';
+        drop.appendChild(empty);
+      } else {
+        matches.forEach(function(p) {
+          const a = document.createElement('a');
+          a.className = 'search-dropdown-item';
+          a.href = 'paper.html#' + encodeURIComponent(p.id);
+          a.setAttribute('role', 'option');
+          const title = document.createElement('span');
+          title.className = 'search-dropdown-title';
+          title.textContent = p.title || 'Untitled';
+          a.appendChild(title);
+          const authors = (p.authors || []).slice(0, 2).join(', ') + ((p.authors || []).length > 2 ? ' et al.' : '');
+          const metaParts = [authors, p.year].filter(Boolean);
+          if (metaParts.length) {
+            const meta = document.createElement('span');
+            meta.className = 'search-dropdown-meta';
+            meta.textContent = metaParts.join(' · ');
+            a.appendChild(meta);
+          }
+          drop.appendChild(a);
+        });
+      }
+      focusIdx = -1;
+      drop.classList.add('open');
+    }
+
+    function close() {
+      drop.classList.remove('open');
+      focusIdx = -1;
+    }
+
+    inp.addEventListener('focus', async function() {
+      await ensureLoaded();
+      if (inp.value.trim()) open(inp.value.trim());
+    });
+
+    inp.addEventListener('input', function(e) {
+      clearTimeout(debounce);
+      const q = e.target.value.trim();
+      debounce = setTimeout(function() { open(q); }, 180);
+    });
+
+    inp.addEventListener('keydown', function(e) {
+      if (!drop.classList.contains('open')) return;
+      const its = items();
+      if (e.key === 'ArrowDown') { e.preventDefault(); setFocus(Math.min(focusIdx + 1, its.length - 1)); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); setFocus(Math.max(focusIdx - 1, 0)); }
+      else if (e.key === 'Enter' && focusIdx >= 0) { e.preventDefault(); if (its[focusIdx]) its[focusIdx].click(); }
+      else if (e.key === 'Escape') { close(); inp.blur(); }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!inp.closest('.navbar-search').contains(e.target)) close();
+    });
+  })();
 
   /* ── Boot ─────────────────────────────────────────────────────── */
 
